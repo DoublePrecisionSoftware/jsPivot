@@ -1,0 +1,251 @@
+﻿@hidden-opacity: 0.2;
+@cell-padding: 3px;
+
+@header-color: #5B9BD5;
+@keycell-color: #DDEBF7;
+
+.cell-padding(@left) {
+    padding: @cell-padding @cell-padding @cell-padding @left;
+}
+
+.menu-hidden() {
+    visibility: hidden;
+    opacity: 0;
+    -moz-transition: visibility 0s linear 0.25s, opacity 0.25s linear;
+    -o-transition: visibility 0s linear 0.25s, opacity 0.25s linear;
+    -webkit-transition: visibility 0s linear 0.25s, opacity 0.25s linear;
+    transition: visibility 0s linear 0.25s, opacity 0.25s linear;
+}
+
+.menu-visible() {
+    visibility: visible;
+    opacity: 1;
+    -moz-transition-delay: 0s;
+    -o-transition-delay: 0s;
+    -webkit-transition-delay: 0s;
+    transition-delay: 0s;
+}
+
+.drop-shadow(@size: 3px) {
+    box-shadow: @size @size @size @size rgba(128, 128, 128, 0.54);
+}
+.inset-shadow(@size: 3px) {
+    box-shadow: @size @size @size @size rgba(128, 128, 128, 0.54) inset;
+}
+
+.glyphicons-icon(@code) {
+    font-family: 'Glyphicons Halflings';
+    content: @code;
+}
+.compact() {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+
+.pivottable {
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+
+    thead {
+        color: white;
+        background-color: @header-color;
+
+        th {
+            padding: 0px 3px 0px 5px;
+
+            &:last-child {
+                text-align: right;
+                padding-right: 5px;
+            }
+
+            &.pivottable-filter {
+                padding: 0;
+            }
+        }
+
+        select {
+            width: 100%;
+            color: #000;
+            margin: 0;
+        }
+
+        a {
+            overflow: hidden;
+
+            &:after {
+                content: '\25B2';
+                border: 1px solid #ccc;
+                .inset-shadow(1px);
+                margin-left: 2px;
+                border-radius: 3px;
+                font-family: 'Courier New', Courier, 'Nimbus Mono L', monospace;
+                background: #fff;
+                padding: 0 3px;
+                font-weight: normal;
+                cursor: pointer;
+                text-decoration: none;
+                font-size: 10px;
+                vertical-align: text-bottom;
+            }
+
+            > div {
+                .menu-hidden();
+                .drop-shadow();
+                position: absolute;
+                top: 10px;
+                left: 0px;
+                border-radius: 3px;
+
+                &:after {
+                    content: '';
+                }
+
+                input:after {
+                    content: "\A";
+                    white-space: pre;
+                }
+            }
+
+            &:hover > div {
+                .menu-visible();
+            }
+        }
+    }
+
+    tbody {
+        tr {
+            .compact();
+
+            &.leaf {
+                font-weight: normal;
+            }
+
+            &.tail {
+                font-weight: bold;
+
+                td {
+                    .cell-padding(25px);
+                }
+
+                &.closed {
+                    font-weight: normal;
+
+                    span {
+                        display: none;
+                    }
+                }
+
+                span {
+                    margin: 0 0.25em 0 0;
+                    padding: 0;
+                }
+            }
+
+            &.closed {
+                > td > a:after {
+                    content: "+";
+                }
+            }
+
+            td {
+                background: transparent;
+                color: #000;
+                .cell-padding(0);
+                margin: 0;
+                text-align: right;
+                padding-right: 10px;
+
+                &:first-child {
+                    padding-left: 10px;
+                    text-align: left;
+                }
+
+                > a {
+                    vertical-align: text-bottom;
+                    font-family: 'Courier New',Courier,'Nimbus Mono L',monospace;
+                    background: #fff;
+                    color: #000;
+                    border-radius: 3px;
+                    padding: 0 3px;
+                    font-weight: normal;
+                    cursor: pointer;
+                    text-decoration: none;
+                    margin-right: 5px;
+                    margin-left: 0;
+                    border: 1px solid black;
+                    font-size: 10px;
+                    box-shadow: inset -1px -1px 1px 0px rgba(50, 50, 50, 0.75);
+
+                    &:active {
+                        box-shadow: inset 1px 1px 1px 0px rgba(50, 50, 50, 0.75);
+                    }
+
+                    &:after {
+                        content: "-";
+                    }
+                }
+            }
+
+
+            &.header td {
+                font-weight: bold;
+            }
+
+            .levels(@i, @offset: 30px) when (@i > 1) {
+                .levels((@i - 1),@offset);
+
+                &[data-level="@{i}"] {
+                    td:first-child {
+                        padding-left: (@offset * (@i - 1));
+                    }
+
+                    &.value {
+                        td:first-child {
+                            padding-left: (@offset * (@i - 1)) + (@offset/2);
+                        }
+                    }
+
+                    &.tail {
+                        td:first-child {
+                            padding-left: (@offset * (@i - 1)) + (@offset);
+                        }
+                    }
+                }
+            }
+
+            &[data-level="1"] {
+                padding-left: 5px;
+
+                &.header {
+                    background: @keycell-color;
+                }
+            }
+
+            .levels(5);
+        }
+    }
+
+    tfoot {
+        background: @header-color;
+        color: #fff;
+        text-align: right;
+        font-weight: bold;
+
+        td {
+            padding: @cell-padding 10px @cell-padding @cell-padding;
+
+            &:last-child {
+                text-align: right;
+                padding-right: 10px;
+            }
+        }
+    }
+}

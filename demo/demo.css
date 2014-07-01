@@ -1,0 +1,12 @@
+body {
+	font-family: sans-serif;
+	padding: 10px;
+}
+
+#demo col[data-column="Id"] {
+	width: 100px;
+}
+
+.pivottable {
+	margin: 20px;
+}
