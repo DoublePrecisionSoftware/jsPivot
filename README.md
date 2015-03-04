@@ -4,6 +4,18 @@ jsPivot
 A simple PivotTable jQuery plugin
 
 
+##Contents
+- [Features](#features)
+- [Usage](#usage)
+- [Data](#data)
+- [Pivot Definitions](#pivots)
+- [Row Definitions](#rows)
+- [Value Definitions](#values)
+- [Column Definitions](#columns)
+- [Filter Definitions](#filters)
+- [Options](#options)
+- [Methods](#methods)
+
 ##Features
 
 * Generates pivot table from tabular data
@@ -47,7 +59,7 @@ var data = {
   };
 ```
 
-##Pivot definitions
+##Pivots
 
 Pivot definitions must contain, at a minimum, a `rows` property and a `values` property.
 
@@ -69,7 +81,7 @@ var pivotDefinition = {
 };
 ```
 
-###Row Definitions
+###Rows
 
 Rows are defined by an array of objects which contain, at a minium, a `key` property specifing the column of data to display.  Optionally, a `label` property may be defined to change the display name of the row.
 
@@ -99,7 +111,7 @@ function sortByPage(a,b) {
 }
 ```
 
-##Value Definitions
+##Values
 
 Values are defined by an array of objects which contain, at a minium, a `key` property, specifing the column of data to display, and an `operation` that defines the aggregate function to perform on the data.  
 
@@ -138,7 +150,7 @@ var values = [{
 
 **NOTE:** Currently the algorithm for sorting values is incredibly slow.  Sorting based on value for large data sets is not recommended.
 
-##Column definitions
+##Columns
 
 Columns are defined by an array of objects containing, at a minimum, a `key` property specifiying column of data to pivot on.
 
@@ -167,7 +179,7 @@ function simpleSort(a, b) {
 }
 ```
 
-##Filter Definitions
+##Filters
 
 Filters are defined by an array of objects which contain, at a minimum, a `key` property specifiying the column to filter on.
 
@@ -177,6 +189,46 @@ var filters = [
 ];
 ```
 Custom filters are coming soon.
+
+##Options
+
+You may call jsPivot on an element with 2 required and 1 optional parameter.
+
+```javascript
+$('#myTable').pivottable({
+  data: myData,       // (required) the tabular data to process
+  pivotOn: myPivot,   // (required) the pivot definition
+  showFooter: true    // (optional) show the totals footer
+});
+```
+
+##Methods
+
+jsPivot provides a number of methods for interacting with the table.
+
+####addRow
+
+```javascript
+$('#myTable').pivottable("addRow", { key: "MyColumn" });
+```
+
+The `addRow` method adds a Row definition to the pivot definition.  To call this method, pass in the method name as well as a new [Row definition](#rows).
+
+####removeRow
+
+```javascript
+$('#myTable').pivottable("removeRow", "MyColumn");
+```
+
+The `addRow` method adds a Row definition to the pivot definition.  To call this method, pass in the method name and the `key` of the row definition to remove.
+
+####unbind
+
+```javascript
+$('#myTable').pivottable("unbind");
+```
+
+The `unbind` method removes the jQuery bindings from the table, essentially removing it from use.
 
 ##Demo
 
