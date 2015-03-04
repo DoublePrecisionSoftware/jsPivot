@@ -212,7 +212,7 @@ jsPivot provides a number of methods for interacting with the table.
 $('#myTable').pivottable("addRow", { key: "MyColumn" });
 ```
 
-The `addRow` method adds a Row definition to the pivot definition.  To call this method, pass in the method name as well as a new [Row definition](#rows).
+The `addRow` method adds a Row definition to the pivot definition and re-renders the table.  To call this method, pass in the method name as well as a new [Row definition](#rows).
 
 ####removeRow
 
@@ -220,7 +220,40 @@ The `addRow` method adds a Row definition to the pivot definition.  To call this
 $('#myTable').pivottable("removeRow", "MyColumn");
 ```
 
-The `addRow` method adds a Row definition to the pivot definition.  To call this method, pass in the method name and the `key` of the row definition to remove.
+The `addRow` method removes a Row definition from the pivot definition and re-renders the table.  To call this method, pass in the method name and the `key` of the row definition to remove.
+
+####addValue
+
+```javascript
+$('#myTable').pivottable("addValue", { key: "MyColumn", operation: myOperation });
+```
+
+The `addvalue` method adds a Row definition to the pivot definition and re-renders the table.  To call this method, pass in the method name as well as a new [Value definition](#values).
+
+####removeValue
+
+```javascript
+$('#myTable').pivottable("removeValue", "MyColumn");
+```
+
+The `addValue` method removes a Row definition from the pivot definition and re-renders the table.  To call this method, pass in the method name and the `key` of the Value definition to remove.
+
+####addColumn
+
+```javascript
+$('#myTable').pivottable("addColumn", { key: "MyColumn" });
+```
+
+The `addColumn` method adds a Column definition to the pivot definition and re-renders the table.  To call this method, pass in the method name as well as a new [Column definition](#columns).
+
+####removeColumn
+
+```javascript
+$('#myTable').pivottable("removeColumn", "MyColumn");
+```
+
+The `addColumn` method removes a Column definition from the pivot definition and re-renders the table.  To call this method, pass in the method name and the `key` of the Column definition to remove.
+
 
 ####unbind
 
