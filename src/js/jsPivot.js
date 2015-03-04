@@ -1,3 +1,6 @@
+// jsPivot.js
+// 2014, Stephen Collins, https://github.com/wtfsven
+// Licensed under the MIT license.
 
 (function ($) {
     'use strict';
@@ -102,6 +105,10 @@
     };
 
     $.fn.pivottable = function (methodOrOptions) {
+        /// <summary>Generates a PivotTable given an input dataset and pivot definition.</summary>
+        /// <param name="methodOrOptions">Object containing initialization data for PivotTable, or name of 
+        /// function and parameters to execute on table.</param>
+        /// <returns type="jQuery">jQuery object containing the PivotTable.</returns>
         var args = arguments;
         if (methods[methodOrOptions]) {
             return this.each(function () { methods[methodOrOptions].apply(this, Array.prototype.slice.call(args, 1)); });
@@ -245,7 +252,9 @@
         data[table] = normalizeData(data[table]);
 
         $table.append('<thead>');
-        renderHeader.call(this, data[table]);
+        // TODO: need a way to avoid sorting both times here.
+        renderHeaderFilters.call(this, data[table]);
+        renderHeaderLabels.call(this, data[table]);
         $table.append('<tbody>');
         renderBody.call(this, data[table]);
         if (settings.showFooter) {
@@ -255,25 +264,46 @@
 
         return this;
     },
-    renderHeader = function (data) {
-        var $table = $(this);
-        var $head = $table.find('thead');
-        var settings = $table.data(dataKey).settings;
+    renderHeaderLabels = function (data) {
+        var $table = $(this),
+            $head = $table.find('thead'),
+            settings = $table.data(dataKey).settings,
+            sortedData = Array.prototype.slice.call(data),
+            html = '';
 
-        var html = '';
-        if (settings.pivotOn.filters.length > 0) {
-            html += templates.header.filters(data, settings.pivotOn);
-        }
         if (settings.pivotOn.columns.length > 0) {
             var i = -1, len = settings.pivotOn.columns.length, sortColumns = [];
             while (++i < len) {
                 if (isdef(settings.pivotOn.columns[i].sort))
-                    sortColumns.push({ func: settings.pivotOn.columns[i].sort });
+                    sortColumns.push(settings.pivotOn.columns[i]);
             }
             if (sortColumns.length > 0)
-                sortByColumns(Array.prototype.slice.call(data), sortColumns);
+                sortByColumns(sortedData, sortColumns);
         }
-        html += templates.header.labels(data, settings.pivotOn);
+        var $html = $(templates.header.labels(data, settings.pivotOn));
+        $head.find('tr').last().remove();
+        $head.append($html);
+    },
+    renderHeaderFilters = function (data) {
+        var $table = $(this),
+            $head = $table.find('thead'),
+            settings = $table.data(dataKey).settings,
+            sortedData = Array.prototype.slice.call(data),
+            html = '';
+
+        if (settings.pivotOn.columns.length > 0) {
+            var i = -1, len = settings.pivotOn.columns.length, sortColumns = [];
+            while (++i < len) {
+                if (isdef(settings.pivotOn.columns[i].sort))
+                    sortColumns.push(settings.pivotOn.columns[i]);
+            }
+            if (sortColumns.length > 0)
+                sortByColumns(sortedData, sortColumns);
+        }
+
+        if (settings.pivotOn.filters.length > 0) {
+            html += templates.header.filters(data, settings.pivotOn);
+        }
         var $html = $(html);
         if ($html.find('.pivottable-filter').hasClass('dateRange')) {
             $html.find('button').click(dateRangeFilterChange);
@@ -296,9 +326,9 @@
 
         while (++i < rowsLength) {
             if (isdef(settings.pivotOn.rows[i].sort))
-                sortColumns.push({func: settings.pivotOn.rows[i].sort });
+                sortColumns.push(settings.pivotOn.rows[i]);
         }
-
+        
         if (sortColumns.length > 0)
             sortByColumns(data, sortColumns);
 
@@ -310,7 +340,9 @@
             sortByValues(pivotData, data, settings.pivotOn, settings.pivotOn.rows[0].key);
             settings.pivotData = transformData(data, settings.pivotOn.rows, settings.pivotOn.values, settings.pivotOn.columns, {});
         }
-        var $nodes = $(templates.body.node(settings.pivotData, settings.pivotOn, settings.data[settings.tableName], 1));
+
+        var html = templates.body.node(settings.pivotData, settings.pivotOn, data, 1);
+        var $nodes = $(html);
         if (settings.pivotOn.rows.length > 1) {
             $nodes.find('td > a').click(expandClick);
         } else {
@@ -322,32 +354,6 @@
         $body.append($nodes);
 
         onRenderEnd.call(this);
-    },
-    sortByValues = function (pivotData, data, pivot, row) {
-        var sortColumns = [];
-        pivot.values.forEach(function (value) {
-            if (!isdef(value.sort)) return;
-            var flattened = flattenData(pivotData, row);
-            var order = flattened.sort(value.sort).map(function (val) {
-                return val[row];
-            });
-            sortColumns.push({func: function (a, b) {
-                var aIndex = order.indexOf(a[row]),
-                    bIndex = order.indexOf(b[row]);
-                if (aIndex < 0) aIndex = order.length;
-                if (bIndex < 0) bIndex = order.length;
-
-                if (aIndex < 0 || bIndex < 0)
-                    return -1;
-                if (aIndex > bIndex)
-                    return 1;
-                else if (aIndex < bIndex)
-                    return -1;
-                return 0;
-            }});
-        });
-        if (sortColumns.length > 0)
-            sortByColumns(data, sortColumns);
     },
     renderFooter = function (data) {
         var $table = $(this),
@@ -365,6 +371,32 @@
         if (settings.onRenderEnd)
             settings.onRenderEnd.call(this);
     },
+    sortByValues = function (pivotData, data, pivot, row) {
+        var sortColumns = [];
+        pivot.values.forEach(function (value) {
+            if (!isdef(value.sort)) return;
+            var flattened = flattenData(pivotData, row);
+            var order = flattened.sort(value.sort).map(function (val) {
+                return val[row];
+            });
+            sortColumns.push({sort: function (a, b) {
+                var aIndex = order.indexOf(a[row]),
+                    bIndex = order.indexOf(b[row]);
+                if (aIndex < 0) aIndex = order.length;
+                if (bIndex < 0) bIndex = order.length;
+
+                if (aIndex < 0 || bIndex < 0)
+                    return -1;
+                if (aIndex > bIndex)
+                    return 1;
+                else if (aIndex < bIndex)
+                    return -1;
+                return 0;
+            }});
+        });
+        if (sortColumns.length > 0)
+            sortByColumns(data, sortColumns);
+    },
     removePivotField = function (key, field) {
         var settings = $(this).data(dataKey).settings;
         var index = indexOf(settings.pivotOn[field], function (val) {
@@ -372,7 +404,8 @@
         });
         if (index > -1) {
             settings.pivotOn[field].splice(index, 1);
-            renderHeader.call(this, settings.data[settings.tableName], settings.pivotOn);
+            renderHeaderFilters.call(this, settings.data[settings.tableName]);
+            renderHeaderLabels.call(this, settings.data[settings.tableName]);
             renderBody.call(this, settings.data[settings.tableName], settings.pivotOn);
         }
     },
@@ -383,7 +416,8 @@
         });
         if (index < 0) {
             settings.pivotOn[field].push(obj);
-            renderHeader.call(this, settings.data[settings.tableName], settings.pivotOn);
+            renderHeaderFilters.call(this, settings.data[settings.tableName]);
+            renderHeaderLabels.call(this, settings.data[settings.tableName]);
             renderBody.call(this, settings.data[settings.tableName], settings.pivotOn);
         }
     },
@@ -472,7 +506,7 @@
             var result = 0;
             i = -1;
             while (++i < len) {
-                result = sortColumns[i].func(a, b);
+                result = sortColumns[i].sort.call(sortColumns[i], a, b);
                 if (result === 0)
                     continue;
             }
@@ -593,6 +627,7 @@
             data = val[0] === "all" ? settings.data[settings.tableName] : filterData(settings.data[settings.tableName], $select.attr('data-field'), val[0]);
         }
         renderBody.call($(this).parents('table'), data);
+        renderHeaderLabels.call($(this).parents('table'), data);
         renderFooter.call($(this).parents('table'), data);
     },
     getFilterValue = function ($elem) {
